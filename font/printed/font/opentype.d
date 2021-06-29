@@ -174,7 +174,7 @@ public:
             const(ubyte)[] headTable = findTable(0x68656164 /* 'head' */);
             if (headTable !is null)
             {
-                skipBytes(headTable, 4 /*version*/ + 4 /*fontRevision*/ + 4 /*checkSumAdjustment*/ + 4 /*magicNumber*/ 
+                skipBytes(headTable, 4 /*version*/ + 4 /*fontRevision*/ + 4 /*checkSumAdjustment*/ + 4 /*magicNumber*/
                                      + 2 /*flags*/ + 2 /*_unitsPerEm*/ + 16 /*created+modified*/+4*2/*bounding box*/ );
                 ushort macStyle = popBE!ushort(headTable);
 
@@ -231,7 +231,13 @@ public:
                 else
                     _style = OpenTypeFontStyle.normal;
             }
-        }        
+        }
+    }
+
+    /// Returns: a typographics family name suitable for grouping fonts per family in menus
+    string fullFontName()
+    {
+        return getName(NameID.fullFontName);
     }
 
     /// Returns: a typographics family name suitable for grouping fonts per family in menus
@@ -310,7 +316,7 @@ public:
                 float actualUnits = _ascender - _descender;
                 return 0.5f * (_ascender + _descender) * _unitsPerEm / actualUnits;
 
-            case alphabetic: 
+            case alphabetic:
                 return 0; // the default "baseline"
 
             case bottom:
@@ -354,7 +360,7 @@ public:
         return _ascender; // looks like ascent, but perhaps not
     }
 
-    /// Returns: Italic angle in counter-clockwise degrees from the vertical. 
+    /// Returns: Italic angle in counter-clockwise degrees from the vertical.
     /// Zero for upright text, negative for text that leans to the right (forward).
     float postScriptItalicAngle()
     {
@@ -641,7 +647,7 @@ private:
                                 ushort* p = cast(ushort*)(idRangeOffsetArray.ptr);
                                 p = p + seg;
                                 p = p + (ch - startCount[seg]);
-                                p = p + (idRangeOffset[seg]/2);    
+                                p = p + (idRangeOffset[seg]/2);
                                 ubyte[] pslice = cast(ubyte[])(p[0..1]);
                                 glyphIndex = popBE!ushort(pslice);
 
@@ -656,7 +662,7 @@ private:
                             }
                             _charToGlyphMapping[ch] = glyphIndex;
 
-                            if (ch > _maxCodepoint) 
+                            if (ch > _maxCodepoint)
                                 _maxCodepoint = ch;
                         }
                     }

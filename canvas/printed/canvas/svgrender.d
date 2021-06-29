@@ -43,12 +43,12 @@ public:
         beginPage();
     }
 
-    const(ubyte)[] bytes()
+    const(ubyte)[] bytes(bool embedFonts = true)
     {
         if (!_finished)
             end();
         auto header = cast(const(ubyte)[])( getHeader() );
-        auto defs = cast(const(ubyte)[])( getDefinitions() );
+        auto defs = cast(const(ubyte)[])( getDefinitions(embedFonts) );
 
         return header ~ defs ~ _bytes;
     }
@@ -386,35 +386,66 @@ private:
     FontSVGInfo[OpenTypeFont] _fontSVGInfos;
 
     // Generates the <defs> section.
-    string getDefinitions()
+    string getDefinitions(bool embedFonts)
     {
         string defs;
         defs ~=
         `<defs>` ~
             `<style type="text/css">` ~
-                "<![CDATA[\n";
-
-                // Embed this font into the SVG as a base64 data URI
-                foreach(pair; _fontSVGInfos.byKeyValue())
-                {
-                    OpenTypeFont font = pair.key;
-                    FontSVGInfo info = pair.value;
-
-                    const(ubyte)[] fontContent = font.fileData;
-                    const(char)[] base64font = Base64.encode(fontContent);
-                    defs ~=
-                        `@font-face` ~
-                        `{` ~
-                            `font-family: ` ~ info.svgFamilyName ~ `;` ~
-                            `src: url('data:application/x-font-ttf;charset=utf-8;base64,` ~ base64font ~ `');` ~
-                        "}\n";
-                }
-
-        defs ~= `]]>`~
+                (embedFonts ? getEmbeddedFonts() : getLocalFonts()) ~
             `</style>` ~
         `</defs>`;
         return defs;
     }
+
+
+    string getEmbeddedFonts()
+    {
+        string css = "<![CDATA[\n";
+
+        // Embed this font into the SVG as a base64 data URI
+        foreach(pair; _fontSVGInfos.byKeyValue())
+        {
+            OpenTypeFont font = pair.key;
+            FontSVGInfo info = pair.value;
+
+            const(ubyte)[] fontContent = font.fileData;
+            const(char)[] base64font = Base64.encode(fontContent);
+            css ~=
+                `@font-face` ~
+                `{` ~
+                    `font-family: ` ~ info.svgFamilyName ~ `;` ~
+                    `src: url('data:application/x-font-ttf;charset=utf-8;base64,` ~ base64font ~ `');` ~
+                "}\n";
+        }
+
+        css ~= `]]>`;
+
+        return css;
+    }
+
+
+    string getLocalFonts()
+    {
+        string css = "";
+
+        // Embed this font into the SVG as a base64 data URI
+        foreach(pair; _fontSVGInfos.byKeyValue())
+        {
+            OpenTypeFont font = pair.key;
+            FontSVGInfo info = pair.value;
+
+            css ~=
+                `@font-face` ~
+                `{` ~
+                    `font-family: ` ~ info.svgFamilyName ~ `;` ~
+                    `src: local('` ~ font.fullFontName ~ `');` ~
+                "}\n";
+        }
+
+        return css;
+    }
+
 
     // Ensure this font exist, generate a /name and give it back
     // Only PDF builtin fonts supported.

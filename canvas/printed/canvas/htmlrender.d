@@ -21,9 +21,9 @@ public:
         super(pageWidthMm, pageHeightMm);
     }
 
-    override const(ubyte)[] bytes()
+    override const(ubyte)[] bytes(bool embedFonts = true)
     {
-        auto svgBytes = super.bytes();
+        auto svgBytes = super.bytes(embedFonts);
         auto htmlHeader = cast(const(ubyte)[])( getHTMLHeader() );
         auto htmlFooter = cast(const(ubyte)[])( getHTMLFooter() );
 
