@@ -391,7 +391,10 @@ public:
     int horizontalAdvance(dchar ch)
     {
         computeFontMetrics();
-        return _glyphs[ _charToGlyphMapping[ch] ].horzAdvance;
+        if (ushort* index = ch in _charToGlyphMapping)
+           return _glyphs[*index].horzAdvance;
+        else
+            return 0; // special value for non available characters
     }
 
     /// Returns: number of glyphs in the font.
