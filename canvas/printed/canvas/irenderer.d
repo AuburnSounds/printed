@@ -107,6 +107,14 @@ interface IRenderingContext2D
     void fillRect(float x, float y, float width, float height);
     void strokeRect(float x, float y, float width, float height);
 
+    ///
+    void fillCircle(float x, float y, float radius);
+    void strokeCircle(float x, float y, float radius);
+
+    ///
+    void fillEllipse(float x, float y, float rx, float ry);
+    void strokeEllipse(float x, float y, float rx, float ry);
+
     /// Draw filled text.
     void fillText(string text, float x, float y);
 
