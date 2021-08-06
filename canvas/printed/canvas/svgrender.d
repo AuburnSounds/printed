@@ -139,6 +139,47 @@ public:
                       _currentStroke, convertFloatToText(_currentLineWidth), _dashSegments, _dashOffset));
     }
 
+    override void fillCircle(float x, float y, float radius)
+    {
+        output(format(`<circle cx="%s" cy="%s" r="%s" fill="%s"/>`,
+                      convertFloatToText(x), convertFloatToText(y), convertFloatToText(radius), _currentFill));
+    }
+
+    override void strokeCircle(float x, float y, float radius)
+    {
+        output(format(
+            `<circle cx="%s" cy="%s" r="%s" stroke="%s" stroke-width="%s" stroke-dasharray="%-(%f %)" stroke-dashoffset="%f" fill="none"/>`,
+            convertFloatToText(x),
+            convertFloatToText(y),
+            convertFloatToText(radius),
+            _currentStroke,
+            convertFloatToText(_currentLineWidth),
+            _dashSegments,
+            _dashOffset
+        ));
+    }
+
+    override void fillEllipse(float x, float y, float rx, float ry)
+    {
+        output(format(`<ellipse cx="%s" cy="%s" rx="%s" ry="%s" fill="%s"/>`,
+                      convertFloatToText(x), convertFloatToText(y), convertFloatToText(rx), convertFloatToText(ry), _currentFill));
+    }
+
+    override void strokeEllipse(float x, float y, float rx, float ry)
+    {
+        output(format(
+            `<ellipse cx="%s" cy="%s" rx="%s" ry="%s" stroke="%s" stroke-width="%s" stroke-dasharray="%-(%f %)" stroke-dashoffset="%f" fill="none"/>`,
+            convertFloatToText(x),
+            convertFloatToText(y),
+            convertFloatToText(rx),
+            convertFloatToText(ry),
+            _currentStroke,
+            convertFloatToText(_currentLineWidth),
+            _dashSegments,
+            _dashOffset
+        ));
+    }
+
     override TextMetrics measureText(string text)
     {
         string svgFamilyName;

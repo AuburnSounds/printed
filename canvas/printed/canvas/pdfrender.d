@@ -380,6 +380,101 @@ final class PDFDocument : IRenderingContext2D
         stroke();
     }
 
+    override void fillCircle(float x, float y, float radius)
+    {
+        ellipsePath(x, y, radius, radius);
+        fill();
+    }
+
+    override void strokeCircle(float x, float y, float radius)
+    {
+        setDashPattern();
+        outDelim();
+        ellipsePath(x, y, radius, radius);
+        stroke();
+    }
+
+    override void fillEllipse(float x, float y, float rx, float ry)
+    {
+        ellipsePath(x, y, rx, ry);
+        fill();
+    }
+
+    override void strokeEllipse(float x, float y, float rx, float ry)
+    {
+        setDashPattern();
+        outDelim();
+        ellipsePath(x, y, rx, ry);
+        stroke();
+    }
+
+    private void ellipsePath(float x, float y, float rx, float ry)
+    {
+        // This number is required to construct a circle. It provides the optimal
+        // locations of the Bezier control points.
+        //
+        // https://spencermortensen.com/articles/bezier-circle/
+        enum float c = 4.0/3.0*(sqrt(2.0) - 1);
+        const crx = c*rx;
+        const cry = c*ry;
+
+        // -- top-right arc
+        // start path at top point of circle
+        outFloat(x);
+        outFloat(y - ry);
+        output(" m");
+        // first bezier control point
+        outFloat(x + crx);
+        outFloat(y - ry);
+        // secon bezier control point
+        outFloat(x + rx);
+        outFloat(y - cry);
+        // target at right-most point of circle
+        outFloat(x + rx);
+        outFloat(y);
+        // conclude Bezier segment
+        output(" c");
+
+        // -- bottom-right arc
+        // first bezier control point
+        outFloat(x + rx);
+        outFloat(y + cry);
+        // secon bezier control point
+        outFloat(x + crx);
+        outFloat(y + ry);
+        // target at right-most point of circle
+        outFloat(x);
+        outFloat(y + ry);
+        // conclude Bezier segment
+        output(" c");
+
+        // -- bottom-left arc
+        // first bezier control point
+        outFloat(x - crx);
+        outFloat(y + ry);
+        // secon bezier control point
+        outFloat(x - rx);
+        outFloat(y + cry);
+        // target at right-most point of circle
+        outFloat(x - rx);
+        outFloat(y);
+        // conclude Bezier segment
+        output(" c");
+
+        // -- top-left arc
+        // first bezier control point
+        outFloat(x - rx);
+        outFloat(y - cry);
+        // secon bezier control point
+        outFloat(x - crx);
+        outFloat(y - ry);
+        // target at right-most point of circle
+        outFloat(x);
+        outFloat(y - ry);
+        // conclude Bezier segment
+        output(" c");
+    }
+
     // Path construction
 
     override void beginPath(float x, float y)
