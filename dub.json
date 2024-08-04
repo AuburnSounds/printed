@@ -24,8 +24,7 @@
 
             "dependencies":
             {
-                "standardpaths": "~>0.0",
-                "binrange": "~>1.0"
+                "standardpaths": "~>0.0"
             }
         },
         {
@@ -39,7 +38,6 @@
             "dependencies":
             {
                 "printed:font": "*",
-                "binrange": "~>1.0",
                 "printed:htmlcolors": "*",
                 "gamut": "~>3.0"
             }

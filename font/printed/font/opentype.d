@@ -12,7 +12,7 @@ import std.string;
 import std.uni;
 import std.algorithm.searching;
 
-import binrange;
+import printed.font.binrange;
 
 
 /// A POD-type to represent a range of Unicode characters.
@@ -25,16 +25,16 @@ struct CharRange
 /// Font weight
 enum OpenTypeFontWeight : int
 {
-    thinest = 0, // Note: thinest doesn't exist in PostScript
-    thin = 100,
+    thinest      = 0, // Note: thinest doesn't exist in PostScript
+    thin       = 100,
     extraLight = 200,
-    light = 300,
-    normal = 400,
-    medium = 500,
-    semiBold = 600,
-    bold = 700,
-    extraBold = 800,
-    black = 900
+    light      = 300,
+    normal     = 400,
+    medium     = 500,
+    semiBold   = 600,
+    bold       = 700,
+    extraBold  = 800,
+    black      = 900
 }
 
 /// Font style
