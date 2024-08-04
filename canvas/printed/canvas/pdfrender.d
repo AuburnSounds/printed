@@ -1148,33 +1148,51 @@ private:
 
     void outStringForDisplay(const(char)[] s)
     {
-        // TODO: selection of shortest encoding instead of always UTF16-BE
 
-        bool allCharUnder512 = true;
+        bool allCharUnder128 = true;
 
         foreach(dchar ch; s)
         {
-            if (ch >= 512)
+            if (ch >= 128)
             {
-                allCharUnder512 = false;
+                allCharUnder128 = false;
                 break;
             }
         }
 
-  /*      if (allCharUnder512)
+        if (allCharUnder128)
         {
+            // FUTURE: apparently "8-bit" text can be put into that form, not sure the encoding
+
+            // Use a Literal String (7.3.4.2), most probably this is smaller
             outDelim();
             output('(');
+            foreach(char ch; s)
+            {
+                // Note: it's not clear why to escape any other character than those, 
+                // since they are allowed in literals.
+                switch(ch)
+                {
+                    case '\n': output(`\n`); break;
+                    case '\r': output(`\r`); break;
+                    case '\\': output(`\\`); break;
+                    case  '(': output(`\(`); break;
+                    case  ')': output(`\)`); break;
+                default:
+                    output(ch); break;
+                }
 
+            }
             output(')');
         }
-        else */
+        else
+
         {
-            // Using encoding UTF16-BE
+            // Use a Hexadecimal String (7.3.4.3)
             output('<');
             foreach(dchar ch; s)
             {
-                ushort CID = cast(ushort)(ch);
+                ushort CID = cast(ushort)(ch); // TODO: no surrogate support???
                 ubyte hi = (CID >> 8) & 255;
                 ubyte lo = CID & 255;
                 static immutable string hex = "0123456789ABCDEF";
