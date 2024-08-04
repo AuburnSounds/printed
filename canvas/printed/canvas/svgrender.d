@@ -470,8 +470,6 @@ private:
     }
 
     // Ensure this font exist, generate a /name and give it back
-    // Only PDF builtin fonts supported.
-    // TODO: bold and oblique support
     void getFont(string fontFamily,
                  FontWeight weight,
                  FontStyle style,

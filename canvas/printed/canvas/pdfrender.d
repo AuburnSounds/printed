@@ -657,7 +657,7 @@ private:
                 import gamut;
                 
                 gamut.Image gimage;
-                gimage.loadFromMemory(originalEncodedData);
+                gimage.loadFromMemory(originalEncodedData, LOAD_NO_PREMUL);
 
                 // Support greyscale PNG
                 if (gimage.type == PixelType.l8)
