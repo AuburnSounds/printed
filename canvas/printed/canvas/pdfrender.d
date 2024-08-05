@@ -1160,7 +1160,7 @@ private:
             }
         }
 
-        if (allCharUnder128)
+        if (false) /*  allCharUnder128) */ // DOESN'T WORK FOR make-manual 
         {
             // FUTURE: apparently "8-bit" text can be put into that form, not sure the encoding
 
