@@ -24,7 +24,7 @@ class Image
         this( assumeUnique(dataFromFile) );
     }
 
-    /// Input is PNG or JPEG memory image directly.
+    /// Input is PNG, JPEG or BMP memory image directly.
     this(const(ubyte)[] data)
     {
         // embed for future use
@@ -32,11 +32,20 @@ class Image
 
         import gamut;
 
-        ImageFormat fmt = gamut.Image.identifyFormatFromMemory(data);
-        bool isPNG = (fmt == ImageFormat.PNG);
-        bool isJPEG = (fmt == ImageFormat.JPEG);
-        if (!isPNG && !isJPEG)
-            throw new Exception("Unidentified format");
+        switch (gamut.Image.identifyFormatFromMemory(data)) with (ImageFormat)
+        {
+            case PNG:
+                _MIME = "image/png";
+                break;
+            case JPEG:
+                _MIME = "image/jpeg";
+                break;
+            case BMP:
+                _MIME = "image/bmp";
+                break;
+            default:
+                throw new Exception("Unidentified format");
+        }
 
         gamut.image.Image img;
         img.loadFromMemory(data, LOAD_NO_PIXELS);
@@ -46,9 +55,6 @@ class Image
 
         _width = img.width();
         _height = img.height();
-
-        if (isPNG) _MIME = "image/png";
-        else _MIME = "image/jpeg";
 
         // Use defaults if missing
 

@@ -631,76 +631,49 @@ private:
             Image image = pair.key;
             ImagePDFInfo info = pair.value;
 
-            bool isPNG = image.MIME == "image/png";
-            bool isJPEG = image.MIME == "image/jpeg";
-            if (!isPNG && !isJPEG)
-                throw new Exception("Unsupported image as PDF embed");
-
             const(ubyte)[] originalEncodedData = image.encodedData();
-
-            // For JPEG, we can use the JPEG-encoded original image directly.
-            // For PNG, we need to decode it, and reencode using DEFLATE
-
-            string filter;
-            if (isJPEG)
-                filter = "DCTDecode";
-            else if (isPNG)
-                filter = "FlateDecode";
-            else
-                assert(false);
-
             const(ubyte)[] pdfData = originalEncodedData; // what content will be embedded
             const(ubyte)[] smaskData = null; // optional smask object
             object_id smaskId;
-            if (isPNG)
+
+            // For JPEG, we can use the JPEG-encoded original image directly.
+            // For PNG and BMP, we need to decode it, and reencode using DEFLATE
+
+            string filter;
+            switch (image.MIME)
             {
-                import gamut;
-                
-                gamut.Image gimage;
-                gimage.loadFromMemory(originalEncodedData, LOAD_NO_PREMUL);
+                case "image/jpeg":
+                    filter = "DCTDecode";
+                    break;
+                case "image/png", "image/bmp":
+                    import gamut;
+                    
+                    filter = "FlateDecode";
+                    
+                    gamut.Image gimage;
+                    gimage.loadFromMemory(originalEncodedData, LOAD_NO_PREMUL);
 
-                // Support greyscale PNG
-                if (gimage.type == PixelType.l8)
-                    gimage.convertTo(PixelType.rgb8);
+                    // Support greyscale PNG
+                    if (gimage.type == PixelType.l8)
+                        gimage.convertTo(PixelType.rgb8);
 
-                // Support luminance + alpha PNG
-                if (gimage.type == PixelType.la8)
-                    gimage.convertTo(PixelType.rgba8);
+                    // Support luminance + alpha PNG
+                    if (gimage.type == PixelType.la8)
+                        gimage.convertTo(PixelType.rgba8);
 
-                if (gimage.type != PixelType.rgb8 && gimage.type != PixelType.rgba8)
-                {
-                    throw new Exception("Only support embed of 8-bit PNG images.");
-                }
-
-                bool hasAlpha = (gimage.type == PixelType.rgba8);
-                int channels = hasAlpha ? 4 : 3;
-
-                int width = gimage.width;
-                int height = gimage.height;
-                int size = width * height * 4;
-
-                // Extract RGB data
-                ubyte[] rgbData = new ubyte[width * height * 3];
-                {
-                    int p = 0;
-                    for (int y = 0; y < height; ++y)
+                    if (gimage.type != PixelType.rgb8 && gimage.type != PixelType.rgba8)
                     {
-                        ubyte* scan = cast(ubyte*) gimage.scanptr(y);
-                        for (int x = 0; x < width; ++x)
-                        {
-                            rgbData[p++] = scan[x * channels + 0];
-                            rgbData[p++] = scan[x * channels + 1];
-                            rgbData[p++] = scan[x * channels + 2];
-                        }
+                        throw new Exception("Only support embed of 8-bit PNG images.");
                     }
-                }
 
-                pdfData = compress(rgbData);
+                    bool hasAlpha = (gimage.type == PixelType.rgba8);
+                    int channels = hasAlpha ? 4 : 3;
 
-                // if PNG has actual alpha information, use separate PDF image as mask
-                if (hasAlpha)
-                {
-                    ubyte[] alphaData = new ubyte[width * height];
+                    int width = gimage.width;
+                    int height = gimage.height;
+
+                    // Extract RGB data
+                    ubyte[] rgbData = new ubyte[width * height * 3];
                     {
                         int p = 0;
                         for (int y = 0; y < height; ++y)
@@ -708,13 +681,36 @@ private:
                             ubyte* scan = cast(ubyte*) gimage.scanptr(y);
                             for (int x = 0; x < width; ++x)
                             {
-                                alphaData[p++] = scan[x * 4 + 3];
+                                rgbData[p++] = scan[x * channels + 0];
+                                rgbData[p++] = scan[x * channels + 1];
+                                rgbData[p++] = scan[x * channels + 2];
                             }
                         }
                     }
-                    smaskData = compress(alphaData);
-                    smaskId = _pool.allocateObjectId();  // MAYDO: allocate this on first use, detect PNG with alpha before
-                }
+
+                    pdfData = compress(rgbData);
+
+                    // if PNG has actual alpha information, use separate PDF image as mask
+                    if (hasAlpha)
+                    {
+                        ubyte[] alphaData = new ubyte[width * height];
+                        {
+                            int p = 0;
+                            for (int y = 0; y < height; ++y)
+                            {
+                                ubyte* scan = cast(ubyte*) gimage.scanptr(y);
+                                for (int x = 0; x < width; ++x)
+                                {
+                                    alphaData[p++] = scan[x * 4 + 3];
+                                }
+                            }
+                        }
+                        smaskData = compress(alphaData);
+                        smaskId = _pool.allocateObjectId();  // MAYDO: allocate this on first use, detect PNG with alpha before
+                    }
+                    break;
+                default:
+                    throw new Exception("Unsupported image as PDF embed");
             }
 
             beginObject(info.streamId);

@@ -12,6 +12,7 @@ void main(string[] args)
 
     Image png = new Image("dman.png");
     Image jpeg = new Image("flower.jpg");
+    Image bmp = new Image("logo.bmp");
 
     foreach(context; [cast(IRenderingContext2D) pdfDoc, 
                       cast(IRenderingContext2D) svgDoc,
@@ -21,6 +22,9 @@ void main(string[] args)
 
         // `printWidth` is the default width when drawn, extracted from DPI information.
         context.drawImage(jpeg, context.pageWidth - jpeg.printWidth - 10, 10);
+
+        context.drawImage(bmp, 10, context.pageHeight - bmp.printHeight - 10);
+        context.drawImage(bmp, context.pageWidth - bmp.printWidth - 10, context.pageHeight - bmp.printHeight - 10);
 
         foreach(offset; 0..6)
         {
