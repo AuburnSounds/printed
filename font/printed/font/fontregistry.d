@@ -205,7 +205,7 @@ private:
         string[] r;
         foreach(p; paths)
         {
-            r ~= p.native.str[].idup;
+            r ~= p.native.idup;
         }
         return r;
     }
