@@ -213,11 +213,12 @@ private:
     /// Gives back a list of absolute pathes of .ttf files we know about
     static string[] listAllFontFiles()
     {
+        string[] fontDirs = getFontDirectories();
         string[] listAllLocalFontFiles()
         {
             string[] fontAbsolutepathes;
 
-            foreach(fontDir; getFontDirectories())
+            foreach(fontDir; fontDirs)
             {
                 if (!fontDir.exists) continue;
                 auto files = dirEntries(fontDir, SpanMode.breadth);
@@ -232,7 +233,7 @@ private:
         {
             string[] fontAbsolutepathes;
 
-            foreach(fontDir; getFontDirectories())
+            foreach(fontDir; fontDirs)
             {
                 if (!fontDir.exists) continue;
                 auto files = dirEntries(fontDir, SpanMode.breadth);
