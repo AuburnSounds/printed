@@ -25,6 +25,7 @@ void main(string[] args)
             beginPath(pageWidth/2, 20);
             lineTo(pageWidth/2, pageHeight-20);
             stroke();
+            fontFace("Lato");
 
             foreach(size_t j, TextAlign alignment; 
                     [
