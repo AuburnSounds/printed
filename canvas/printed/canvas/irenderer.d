@@ -53,7 +53,7 @@ interface IRenderingContext2D
     /// Changes the transformation matrix to apply a rotation transformation with the given characteristics.
     /// The angle is in radians, the direction is clockwise.
     /// Params:
-    ///     angle The rotation angle, in radians.
+    ///     angle = The rotation angle, in radians.
     void rotate(float angle);
 
 
@@ -70,14 +70,14 @@ interface IRenderingContext2D
 
     /// Changes the current fill brush (Default = "black").
     /// Params:
-    ///    color Any HTML color string, or a `Brush` if you want to save the parsing cost.
+    ///    color = Any HTML color string, or a `Brush` if you want to save the parsing cost.
     void fillStyle(Brush brush);
     ///ditto
     void fillStyle(const(char)[] color); // equivalent to `fillStyle(brush(color));`
 
     /// Changes the current stroke brush (Default = "black").
     /// Params:
-    ///    color Any HTML color string.
+    ///    color = Any HTML color string.
     void strokeStyle(Brush brush);
     ///ditto
     void strokeStyle(const(char)[] color); // equivalent to `strokeStyle(brush(color));`

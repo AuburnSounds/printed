@@ -13,7 +13,9 @@ import std.uni;
 import std.string: format;
 import std.math: abs;
 import std.typecons: Tuple;
-import standardpaths;
+
+import filesystem;
+import nulib.collections.vector;
 
 import printed.font.opentype;
 
@@ -191,16 +193,21 @@ private:
     /// Get a list of system font directories
     static private string[] getFontDirectories()
     {
-        string[] paths = standardPaths(StandardPath.fonts);
+        vector!Path paths = standardPaths(StandardPath.fonts);
         version(Windows)
         {
-            string[] appdata = standardPaths(StandardPath.data);
+            vector!Path appdata = standardPaths(StandardPath.data);
             foreach(p; appdata)
             {
-                paths ~= p ~ `\Microsoft\Windows\Fonts`;
+                paths ~= p / `Microsoft\Windows\Fonts`;
             }
         }
-        return paths;
+        string[] r;
+        foreach(p; paths)
+        {
+            r ~= p.native.str[].idup;
+        }
+        return r;
     }
 
     /// Gives back a list of absolute pathes of .ttf files we know about

@@ -24,7 +24,7 @@
 
             "dependencies":
             {
-                "standardpaths": "~>0.0"
+                "filesystem": "~>1.0"
             }
         },
         {
