@@ -24,7 +24,17 @@
 
             "dependencies":
             {
-                "filesystem": "~>1.0"
+                "filesystem":
+                {
+                    "version": "~>1.0",
+                    "optional": true,
+                    "default": true
+                },
+                "standardpaths":
+                {
+                    "version": "~>0.0",
+                    "optional": true
+                }
             }
         },
         {
@@ -61,7 +71,7 @@
             "importPaths": [ "flow" ],
             "dependencies":
             {
-                "printed:canvas": "*",
+                "printed:canvas": "*"
             }
         }
     ]
