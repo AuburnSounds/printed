@@ -67,7 +67,12 @@ public:
 
     override void save()
     {
-        _stateStack ~= State(currentOpenedNestedGroups() + 1);
+        _stateStack ~= State(openedNestedGroups: currentOpenedNestedGroups() + 1,
+                             currentFill: _currentFill,
+                             currentStroke: _currentStroke,
+                             currentLineWidth: _currentLineWidth,
+                             dashSegments: _dashSegments,
+                             dashOffset: _dashOffset);
         output("<g>");
     }
 
@@ -78,6 +83,7 @@ public:
         assert(_stateStack.length > 1);
 
         int nestedGroupsBefore = currentOpenedNestedGroups();
+        State previous = _stateStack[$-1]; // the state being popped carries the paint to reinstate
         _stateStack = _stateStack[0..$-1]; // pop
         int nestedGroupsAfter = currentOpenedNestedGroups();
 
@@ -85,6 +91,12 @@ public:
         {
             output("</g>");
         }
+
+        _currentFill = previous.currentFill;
+        _currentStroke = previous.currentStroke;
+        _currentLineWidth = previous.currentLineWidth;
+        _dashSegments = previous.dashSegments;
+        _dashOffset = previous.dashOffset;
     }
 
     /// Start a new page, finish the previous one.
@@ -356,6 +368,14 @@ private:
     static struct State
     {
         int openedNestedGroups; // Number of opened <g> at the point `save()` is called.
+
+        // Paint state captured by save() and reinstated by restore(), mirroring how the PDF backend's q/Q saves
+        // the full graphics state. SVG bakes these values onto each element rather than inheriting them.
+        string currentFill;
+        string currentStroke;
+        float currentLineWidth;
+        float[] dashSegments;
+        float dashOffset;
     }
     State[] _stateStack;
 
@@ -393,7 +413,12 @@ private:
 
     void beginPage()
     {
-        _stateStack ~= State(currentOpenedNestedGroups() + 1);
+        _stateStack ~= State(openedNestedGroups: currentOpenedNestedGroups() + 1,
+                             currentFill: _currentFill,
+                             currentStroke: _currentStroke,
+                             currentLineWidth: _currentLineWidth,
+                             dashSegments: _dashSegments,
+                             dashOffset: _dashOffset);
         output(format(`<g transform="translate(0,%s)">`, convertFloatToText(_pageHeightMm * (_numberOfPage-1))));
     }
 
@@ -568,4 +593,27 @@ unittest
     char[] s = "1,5".dup;
     replaceCommaPerDot(s);
     assert(s == "1.5");
+}
+
+// Verify save()/restore() also restores paint state (line width, dash, colours), not only transformations, so a
+// change made inside a saved block does not leak past restore() into later shapes (matching PDF's q/Q semantics).
+unittest
+{
+    import std.algorithm : canFind;
+    
+    auto svg = new SVGDocument(100, 100);
+
+    svg.lineWidth(2); // the width that must be reinstated after restore()
+    svg.save();
+    svg.lineWidth(1); // change made only inside the saved block
+    svg.restore();
+
+    // This shape is painted after restore(), so its stroke width must be back to 2, not the inner 1.
+    svg.beginPath(20, 20);
+    svg.lineTo(80, 80);
+    svg.stroke();
+
+    string svgText = cast(string) svg.bytes;
+    assert(canFind(svgText, `stroke-width="2"`), "restore() did not reinstate the line width set before save()");
+    assert(!canFind(svgText, `stroke-width="1"`), "the line width set inside the saved block leaked past restore()");
 }
