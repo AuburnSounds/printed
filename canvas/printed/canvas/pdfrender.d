@@ -544,7 +544,9 @@ private:
         if (_isSetDashPattern)
             return; // already emitted to PDF; do nothing
 
+        outDelim();
         output(format!"[%-(%f %)] %f d"(_dashSegments, _dashOffset));
+        _isSetDashPattern = true;
     }
 
     // </alpha support>
